@@ -1,0 +1,323 @@
+uses SysUtils, StdCtrls, Controls, Forms, Dialogs; //3501694D00000041870004CE050000 //
+
+type
+TEvents = class (tobject)
+procedure onclick(Sender: tobject);
+end;
+
+var
+Events: TEvents;
+Label01, Label02: TLabel;
+Frm: TForm;
+pcktFromServer, pcktFromClient, SendAPckt:Tmemo;
+PlayerID, TargetID:TEdit;
+UID, TID, SendToC, SendToS, ClearS, ClearC: TButton;
+Txt: string;
+p: pointer;
+CtrlAlt, Key, i: Integer;
+buf: AnsiString;
+ID: Word;
+IDpck01, IDpck02, pcktBodyToClient, pcktBodyToServer, packet: string;
+
+procedure MainProc;
+begin
+Events := TEvents.Create;
+
+Frm  := TForm.Create(nil);
+Frm.Caption := ('pcktLOG');
+Frm.BorderStyle := bsSingle;
+Frm.Position := poScreenCenter;
+Frm.Height := 800;
+Frm.Width := 900;
+Frm.AlphaBlendValue := 200;
+Frm.AlphaBlend := false;
+engine.print('The Script Has Been Loaded', 8388608);
+
+//Label
+Label01 := TLabel.Create(Frm);
+Label01.Parent := Frm;
+Label01.Left	:= 3;
+Label01.Top	:= 3;
+Label01.Width   := 58;
+Label01.Height  := 13;
+Label01.Visible := TRUE;
+Label01.Tag	:= 0;
+Label01.Enabled  := TRUE;
+Label01.Hint	:= '';
+Label01.ShowHint := FALSE;
+Label01.Caption	:= 'Packets To Client: ';
+Label01.Transparent := TRUE;
+Label01.WordWrap	:= FALSE;
+Label01.Layout	  := tlTop;
+Label01.AutoSize	:= TRUE;
+Label01.Align	   := alNone;
+
+Label01 := TLabel.Create(Frm);
+Label01.Parent := Frm;
+Label01.Left	:= 3;
+Label01.Top	:= 370;
+Label01.Width   := 58;
+Label01.Height  := 13;
+Label01.Visible := TRUE;
+Label01.Tag	:= 0;
+Label01.Enabled  := TRUE;
+Label01.Hint	:= '';
+Label01.ShowHint := FALSE;
+Label01.Caption	:= 'Packets To Server: ';
+Label01.Transparent := TRUE;
+Label01.WordWrap	:= FALSE;
+Label01.Layout	  := tlTop;
+Label01.AutoSize	:= TRUE;
+Label01.Align	   := alNone;
+
+Label01 := TLabel.Create(Frm);
+Label01.Parent := Frm;
+Label01.Left	:= 3;
+Label01.Top	:= 740;
+Label01.Width   := 58;
+Label01.Height  := 13;
+Label01.Visible := TRUE;
+Label01.Tag	:= 0;
+Label01.Enabled  := TRUE;
+Label01.Hint	:= '';
+Label01.ShowHint := FALSE;
+Label01.Caption	:= 'Send A Packet: ';
+Label01.Transparent := TRUE;
+Label01.WordWrap	:= FALSE;
+Label01.Layout	  := tlTop;
+Label01.AutoSize	:= TRUE;
+Label01.Align	   := alNone;
+
+//Buttons
+UID := TButton.Create(Frm);
+UID.Left	:= 802;
+UID.Top	:= 20;
+UID.Width   := 80;
+UID.Height  := 23;
+UID.Caption := 'Player ID';
+UID.onclick := Events.onclick;
+UID.Parent  := Frm;
+
+TID := TButton.Create(Frm);
+TID.Left	:= 802;
+TID.Top	:= 63;
+TID.Width   := 80;
+TID.Height  := 23;
+TID.Caption := 'Target ID';
+TID.onclick := Events.onclick;
+TID.Parent  := Frm;
+
+SendToC := TButton.Create(Frm);
+SendToC.Left	:= 800;
+SendToC.Top	:= 736;
+SendToC.Width   := 80;
+SendToC.Height  := 23;
+SendToC.Caption := 'SendToClient';
+SendToC.onclick := Events.onclick;
+SendToC.Parent  := Frm;
+
+SendToS := TButton.Create(Frm);
+SendToS.Left	:= 800;
+SendToS.Top	:= 712;
+SendToS.Width   := 80;
+SendToS.Height  := 23;
+SendToS.Caption := 'SendToServer';
+SendToS.onclick := Events.onclick;
+SendToS.Parent  := Frm;
+
+ClearS := TButton.Create(Frm);
+ClearS.Left	:= 802;
+ClearS.Top	:= 140;
+ClearS.Width   := 80;
+ClearS.Height  := 23;
+ClearS.Caption := 'ClearS';
+ClearS.onclick := Events.onclick;
+ClearS.Parent  := Frm;
+
+ClearC := TButton.Create(Frm);
+ClearC.Left	:= 802;
+ClearC.Top	:= 160;
+ClearC.Width   := 80;
+ClearC.Height  := 23;
+ClearC.Caption := 'ClearC';
+ClearC.onclick := Events.onclick;
+ClearC.Parent  := Frm;
+
+//Copyable
+pcktFromServer := Tmemo.Create(Frm);
+pcktFromServer.Parent := Frm;
+pcktFromServer.Left	:= 1;
+pcktFromServer.Top	:= 20;
+pcktFromServer.Width   := 790;
+pcktFromServer.Height  := 350;
+pcktFromServer.Visible := TRUE;
+pcktFromServer.Tag	:= 0;
+pcktFromServer.Enabled  := TRUE;
+pcktFromServer.ShowHint := TRUE;
+pcktFromServer.Text	   := '';
+pcktFromServer.TabOrder	:= 5;
+pcktFromServer.TabStop	  := TRUE;
+pcktFromServer.ReadOnly	:= FALSE;
+pcktFromServer.MaxLength	:= 0;
+
+pcktFromClient := Tmemo.Create(Frm);
+pcktFromClient.Parent := Frm;
+pcktFromClient.Left	:= 1;
+pcktFromClient.Top	:= 387;
+pcktFromClient.Width   := 790;
+pcktFromClient.Height  := 350;  //350
+pcktFromClient.Visible := TRUE;
+pcktFromClient.Tag	:= 0;
+pcktFromClient.Enabled  := TRUE;
+pcktFromClient.ShowHint := TRUE;
+pcktFromClient.Text	   := '';
+pcktFromClient.TabOrder	:= 5;
+pcktFromClient.TabStop	  := TRUE;
+pcktFromClient.ReadOnly	:= FALSE;
+pcktFromClient.MaxLength	:= 0;
+
+SendAPckt := Tmemo.Create(Frm);
+SendAPckt.Parent := Frm;
+SendAPckt.Left	:= 78;
+SendAPckt.Top	:= 739;
+SendAPckt.Width   := 713;
+SendAPckt.Height  := 20;
+SendAPckt.Visible := TRUE;
+SendAPckt.Tag	:= 0;
+SendAPckt.Enabled  := TRUE;
+SendAPckt.ShowHint := TRUE;
+SendAPckt.Text	   := '';
+SendAPckt.TabOrder	:= 5;
+SendAPckt.TabStop	  := TRUE;
+SendAPckt.ReadOnly	:= FALSE;
+SendAPckt.MaxLength	:= 0;
+
+PlayerID := TEdit.Create(Frm);
+PlayerID.Parent := Frm;
+PlayerID.Left	:= 802;
+PlayerID.Top	:= 43;
+PlayerID.Width   := 80;
+PlayerID.Height  := 23;
+PlayerID.Visible := TRUE;
+PlayerID.Tag	:= 0;
+PlayerID.Enabled  := TRUE;
+PlayerID.ShowHint := TRUE;
+PlayerID.Text	   := '';
+PlayerID.TabOrder	:= 5;
+PlayerID.TabStop	  := TRUE;
+PlayerID.ReadOnly	:= TRUE;
+PlayerID.MaxLength	:= 0;
+
+TargetID := TEdit.Create(Frm);
+TargetID.Parent := Frm;
+TargetID.Left	:= 802;
+TargetID.Top	:= 83;
+TargetID.Width   := 80;
+TargetID.Height  := 23;
+TargetID.Visible := TRUE;
+TargetID.Tag	:= 0;
+TargetID.Enabled  := TRUE;
+TargetID.ShowHint := TRUE;
+TargetID.Text	   := '';
+TargetID.TabOrder	:= 5;
+TargetID.TabStop	  := TRUE;
+TargetID.ReadOnly	:= TRUE;
+TargetID.MaxLength	:= 0;
+
+
+Frm.Show;
+end;
+
+procedure OnFree;
+var Tmp: tobject;
+begin
+//Tmp := Frm;
+Frm := nil;
+//Tmp.Free;
+Events.Free;  
+engine.print('Script stop', 252);
+end;
+
+procedure TEvents.onclick(Sender: tobject);
+var
+S: string;
+
+begin
+
+if Sender = UID then begin
+  PlayerID.Text:=(MemToHex(User.OID,3));
+end;
+
+if Sender = TID then begin
+  TargetID.Text:=(MemToHex(User.target.OID,3));
+end;
+
+if Sender = SendToC then begin
+  packet:=SendAPckt.Text;
+  Engine.SendToClient(''+packet+'');
+  engine.print('The Packet Has Been Sent: '+packet+'');
+end;
+
+if Sender = SendToS then begin
+  packet:=SendAPckt.Text;
+  Engine.SendToServer(''+packet+'');
+  engine.print('The Packet Has Been Sent: '+packet+'');
+end;
+
+if Sender = ClearS then begin
+  pcktFromServer.clear;
+end;
+
+if Sender = ClearC then begin
+  pcktFromClient.clear;
+end;
+
+end;
+
+
+procedure OnPacket(FromServer: Boolean;  Packet: string; Data: Pointer; Size: Word);
+var
+buf: String;
+begin
+IDpck01:=copy(Packet,1,4);
+IDpck02:=copy(Packet,1,4);   //
+
+if (FromServer)	// вписываем первые четыре символа спамныйх пакетов на КЛИЕНТ
+and not (IDpck01='1D02')  // Это фильтр пакетов. вписываем сюда постоянные пакеты (первые четыре символа)
+and not (IDpck02='2E00') // далее они не будут отображаться в интерфейсе.
+and not (IDpck02='2D02')
+and not (IDpck02='0202')	//MoveUnit
+then begin
+  pcktBodyToClient:=copy(Packet,1,100);
+  pcktFromServer.Lines.Add(pcktBodyToClient);
+end;
+if (not FromServer)
+and not (IDpck02='2E00')	//MoveUnitToServer
+and not (IDpck02='8900')	//MoveToPoint
+then begin
+  pcktBodyToServer:=copy(Packet,1,100);
+  pcktFromClient.Lines.Add(pcktBodyToServer);
+end;
+end;
+
+begin
+Script.MainProc(@MainProc, nil);
+print MemToHex(User.OID,3);
+repeat
+Delay(1000);
+until not assigned(Frm);
+end.
+
+
+
+
+Procedure Button1Click(Sender);
+var
+f : integer;
+begin
+for f := 0 to memo1.lines.count -1 do
+begin
+if AnsiContainsStr(Memo1.lines[f], 'Warning') then
+memo2.lines.add(memo1.lines[f]);
+end;
+end; 
